@@ -135,21 +135,21 @@ public class SingleLinkedListImpl implements List {
             return data;
         }
 
-//        @Override
-//        public void remove() {
-//            if (previous == null) {
-//                throw new IllegalStateException("Next method has not been called, or remove method has already been called after the last call to the next method");
-//            }
-//
-//            if (previous == head) {
-//                head.next = current.next;
-//            } else {
-//                previous.next = current.next;
-//            }
-//
-//            head.data = (int) head.data - 1;
-//            current = previous;
-//            previous = null;
-//        }
+        @Override
+        public void remove() {
+            if (previous == null) {
+                throw new IllegalStateException("Next method has not been called, or remove method has already been called after the last call to the next method");
+            }
+
+            if (previous == head) {
+                head.next = current.next;
+            } else {
+                previous.next = current.next;
+            }
+
+            head.data = (int) head.data - 1;
+            current = previous;
+            previous = null;
+        }
     }
 }
