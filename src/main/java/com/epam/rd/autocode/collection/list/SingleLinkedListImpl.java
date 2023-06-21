@@ -115,12 +115,12 @@ public class SingleLinkedListImpl implements List {
     }
 
     private class LinkedListIterator implements Iterator<Object> {
-        private Node current = head.next;
+        private Node current = head; // Initialize current with head instead of null
         private Node previous = null;
 
         @Override
         public boolean hasNext() {
-            return current != null;
+            return current.next != null; // Check if the next node is not null
         }
 
         @Override
@@ -128,12 +128,15 @@ public class SingleLinkedListImpl implements List {
             if (!hasNext()) {
                 throw new NoSuchElementException("No more elements in the list");
             }
+                current = current.next; // Move the iterator forward
 
-            Object data = current.data;
-            previous = current;
-            current = current.next;
+
+            Object data = current.data; // Get the data from the current node
+            previous = current; // Update the previous node
+
             return data;
         }
+
 
         @Override
         public void remove() {
@@ -142,14 +145,24 @@ public class SingleLinkedListImpl implements List {
             }
 
             if (previous == head) {
-                head.next = current.next;
+                head = current.next; // Update the head reference if the first node is removed
             } else {
-                previous.next = current.next;
+                previous.next = current.next; // Update the reference to skip the current node
             }
 
-            head.data = (int) head.data - 1;
-            current = previous;
+            head.data = (int) head.data - 1; // Decrement the list size
+
+            if (current == head) {
+                current = head.next; // Move the iterator forward if the head node is removed
+            } else {
+                current = previous; // Adjust the current reference if a non-head node is removed
+            }
+
             previous = null;
+            current.data = null;
         }
+
+
+
     }
-}
+    }
