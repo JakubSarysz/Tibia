@@ -1,6 +1,5 @@
 package com.epam.rd.autocode.queue;
 
-import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.LinkedList;
 
@@ -9,7 +8,7 @@ public class   CashBox {
 
 	private int number;
 
-	private Deque<Buyer> buyers;
+	private Deque<Buyer> byers;
 
 	private State state;
 
@@ -19,20 +18,21 @@ public class   CashBox {
 
 	public CashBox(int number) {
 		this.number = number;
-		this.buyers = new ArrayDeque<>();
-		this.state = State.DISABLED;
+		this.byers = new LinkedList<>();
+		this.state = State.ENABLED;
 	}
 
 	public Deque<Buyer> getQueue() {
-		return new ArrayDeque<>(buyers);
+		Deque<Buyer> copy = new LinkedList<>(byers);
+		return copy;
 	}
 
 	public Buyer serveBuyer() {
-		if (buyers.isEmpty()) {
+		if (byers.isEmpty()) {
 			return null;
 		}
-		Buyer servedBuyer = buyers.pollFirst();
-		if(buyers.isEmpty() && state == State.IS_CLOSING) {
+		Buyer servedBuyer = byers.pollFirst();
+		if (byers.isEmpty() && state == State.IS_CLOSING) {
 			state = State.DISABLED;
 		}
 		return servedBuyer;
@@ -55,21 +55,16 @@ public class   CashBox {
 	}
 
 	public void addLast(Buyer byer) {
-		buyers.addLast(byer);
+		byers.addLast(byer);
 	}
 
 	public Buyer removeLast() {
-		return buyers.pollLast();
+		return byers.pollLast();
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("#").append(number).append(state == State.DISABLED ? "[-]" : "[+]");
-		for (Buyer buyer : buyers) {
-			sb.append(" ").append(buyer.toString());
-		}
-		return sb.toString();
+		return null;
 	}
 
 }
