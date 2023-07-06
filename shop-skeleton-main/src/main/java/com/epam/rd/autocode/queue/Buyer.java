@@ -20,7 +20,8 @@ public final class Buyer {
 	}
 	
 	private final char name;
-	
+
+
 	private Buyer(char name) {
 		this.name = name;
 	}

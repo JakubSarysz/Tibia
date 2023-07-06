@@ -1,15 +1,12 @@
 package com.epam.rd.autocode.queue;
 
+import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.LinkedList;
 
-
-public class   CashBox {
-
+public class CashBox {
 	private int number;
-
-	private Deque<Buyer> byers;
-
+	private Deque<Buyer> queue;
 	private State state;
 
 	public enum State {
@@ -18,24 +15,19 @@ public class   CashBox {
 
 	public CashBox(int number) {
 		this.number = number;
-		this.byers = new LinkedList<>();
-		this.state = State.ENABLED;
+		this.queue = new LinkedList<>();
+		this.state = State.DISABLED;
 	}
 
 	public Deque<Buyer> getQueue() {
-		Deque<Buyer> copy = new LinkedList<>(byers);
-		return copy;
+		return new ArrayDeque<>(queue);
 	}
 
 	public Buyer serveBuyer() {
-		if (byers.isEmpty()) {
-			return null;
+		if (!queue.isEmpty()) {
+			return queue.removeFirst();
 		}
-		Buyer servedBuyer = byers.pollFirst();
-		if (byers.isEmpty() && state == State.IS_CLOSING) {
-			state = State.DISABLED;
-		}
-		return servedBuyer;
+		return null;
 	}
 
 	public boolean inState(State state) {
@@ -54,17 +46,35 @@ public class   CashBox {
 		return state;
 	}
 
-	public void addLast(Buyer byer) {
-		byers.addLast(byer);
+	public void addLast(Buyer buyer) {
+		queue.addLast(buyer);
 	}
 
 	public Buyer removeLast() {
-		return byers.pollLast();
+		if (!queue.isEmpty()) {
+			return queue.removeLast();
+		}
+		return null;
+	}
+
+	public int getNumber() {
+		return number;
 	}
 
 	@Override
 	public String toString() {
-		return null;
-	}
+		StringBuilder sb = new StringBuilder();
+		sb.append("#").append(number).append("[");
 
+		if (state == State.DISABLED) {
+			sb.append("-");
+		} else if (state == State.ENABLED) {
+			sb.append("+");
+		} else if (state == State.IS_CLOSING) {
+			sb.append("|");
+		}
+		sb.append("]");
+
+		return sb.toString();
+	}
 }
