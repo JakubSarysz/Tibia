@@ -48,15 +48,16 @@ public class Shop {
 		return smallestQueueCashBox;
 	}
 
+
 	public void tact() {
 		// Step 1: Serve one buyer from each non-empty queue
 		for (CashBox cashBox : cashBoxes) {
-				cashBox.serveBuyer();
-			}
+			cashBox.serveBuyer();
+		}
 
 
 		// Step 2: Balance the queues
-		//balance();
+		balance();
 
 		// Step 3: Update the state of cashboxes that reached the end of their queues
 		for (CashBox cashBox : cashBoxes) {
@@ -65,7 +66,7 @@ public class Shop {
 			}
 		}
 
-			}
+	}
 
 
 	public void print() {
@@ -107,47 +108,52 @@ public class Shop {
 	}
 
 	private void balance() {
-		int minSize = Integer.MAX_VALUE;
-		int maxSize = Integer.MIN_VALUE;
+		long sum = 0;
+		long enabled = 0;
+		long closing = 0;
+		long closingQueues = 0;
 
 		for (CashBox cashBox : cashBoxes) {
-			int size = cashBox.getQueue().size();
+			sum += cashBox.getQueue().size();
+
+			if (cashBox.inState(CashBox.State.ENABLED)) {
+				enabled++;
+			}
+
 			if (cashBox.inState(CashBox.State.IS_CLOSING)) {
-				minSize = Math.min(minSize, size);
-			} else {
-				minSize = Math.min(minSize, size);
-				maxSize = Math.max(maxSize, size);
+				closing++;
+				closingQueues += cashBox.getQueue().size();
 			}
 		}
+
+		long rest = sum % enabled;
+		long max = sum / enabled - closingQueues;
+
+		if (rest != 0) {
+			max += enabled / rest;
+		}
+
+		long min = sum / enabled;
 
 		Deque<Buyer> defectorBuyers = new LinkedList<>();
+
 		for (CashBox cashBox : cashBoxes) {
-			if (cashBox.inState(CashBox.State.IS_CLOSING)) {
-				int k = maxSize - cashBox.getQueue().size();
-				for (int i = 0; i < k; i++) {
-					defectorBuyers.addLast(cashBox.removeLast());
+			long size = cashBox.getQueue().size() - max;
+
+			if (size > 0) {
+				for (int i = 0; i < size; i++) {
+					Buyer buyer = cashBox.removeLast();
+					defectorBuyers.add(buyer);
 				}
 			}
 		}
 
-		int defectorBuyersSize = defectorBuyers.size();
 		for (CashBox cashBox : cashBoxes) {
 			if (cashBox.inState(CashBox.State.ENABLED)) {
-				int k = minSize - cashBox.getQueue().size();
-				for (int i = 0; i < k; i++) {
-					if (!defectorBuyers.isEmpty()) {
-						cashBox.addLast(defectorBuyers.removeFirst());
-					}
+				while (cashBox.getQueue().size() < max && !defectorBuyers.isEmpty()) {
+					cashBox.addLast(defectorBuyers.removeFirst());
 				}
 			}
 		}
-	}
-
-	private static int getTotalBuyersCount(List<CashBox> cashBoxes) {
-		int totalBuyers = 0;
-		for (CashBox cashBox : cashBoxes) {
-			totalBuyers += cashBox.getQueue().size();
-		}
-		return totalBuyers;
 	}
 }
