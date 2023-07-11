@@ -1,10 +1,6 @@
 package com.epam.rd.autocode.queue;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class Shop {
 	private int cashBoxCount;
@@ -108,40 +104,41 @@ public class Shop {
 	}
 
 	private void balance() {
-		long sum = 0;
-		long enabled = 0;
-		long closing = 0;
-		long closingQueues = 0;
+		int totalBuyers = 0;
+		int enabledCashBoxes = 0;
+		int closingQueues = 0;
 
+		// Step 1: Calculate the total number of buyers, enabled cash boxes, and closing queues
 		for (CashBox cashBox : cashBoxes) {
-			sum += cashBox.getQueue().size();
+			totalBuyers += cashBox.getQueue().size();
 
 			if (cashBox.inState(CashBox.State.ENABLED)) {
-				enabled++;
+				enabledCashBoxes++;
 			}
 
 			if (cashBox.inState(CashBox.State.IS_CLOSING)) {
-				closing++;
-				closingQueues += cashBox.getQueue().size();
+				closingQueues++;
 			}
 		}
 
-		long rest = sum % enabled;
-		long max = sum / enabled - closingQueues;
+		// Step 2: Determine the maximum and minimum number of buyers per enabled cash box
+		int maxBuyersPerCashBox = totalBuyers / enabledCashBoxes;
+		int minBuyersPerCashBox = maxBuyersPerCashBox;
 
-		if (rest != 0) {
-			max += enabled / rest;
+		int remainingBuyers = totalBuyers % enabledCashBoxes;
+		if (remainingBuyers > 0) {
+			maxBuyersPerCashBox++;
 		}
 
-		long min = sum / enabled;
-
-		Deque<Buyer> defectorBuyers = new LinkedList<>();
+		// Step 3: Perform the balancing of queues
+		Queue<Buyer> defectorBuyers = new LinkedList<>();
 
 		for (CashBox cashBox : cashBoxes) {
-			long size = cashBox.getQueue().size() - max;
+			int queueSize = cashBox.getQueue().size();
 
-			if (size > 0) {
-				for (int i = 0; i < size; i++) {
+			if (queueSize > maxBuyersPerCashBox) {
+				int excessBuyers = queueSize - maxBuyersPerCashBox;
+				for (int i = 0; i < excessBuyers; i++) {
 					Buyer buyer = cashBox.removeLast();
 					defectorBuyers.add(buyer);
 				}
@@ -150,10 +147,11 @@ public class Shop {
 
 		for (CashBox cashBox : cashBoxes) {
 			if (cashBox.inState(CashBox.State.ENABLED)) {
-				while (cashBox.getQueue().size() < max && !defectorBuyers.isEmpty()) {
-					cashBox.addLast(defectorBuyers.removeFirst());
+				while (cashBox.getQueue().size() < minBuyersPerCashBox && !defectorBuyers.isEmpty()) {
+					cashBox.addLast(defectorBuyers.remove());
 				}
 			}
 		}
 	}
+
 }
