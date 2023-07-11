@@ -1,6 +1,10 @@
 package com.epam.rd.autocode.queue;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Shop {
 	private int cashBoxCount;
@@ -43,7 +47,6 @@ public class Shop {
 
 		return smallestQueueCashBox;
 	}
-
 
 	public void tact() {
 		// Step 1: Serve one buyer from each non-empty queue
@@ -90,7 +93,6 @@ public class Shop {
 		}
 	}
 
-
 	public CashBox getCashBox(int cashBoxNumber) {
 		if (cashBoxNumber >= 0 && cashBoxNumber < cashBoxes.size()) {
 			return cashBoxes.get(cashBoxNumber);
@@ -104,41 +106,17 @@ public class Shop {
 	}
 
 	private void balance() {
-		int totalBuyers = 0;
-		int enabledCashBoxes = 0;
-		int closingQueues = 0;
 
-		// Step 1: Calculate the total number of buyers, enabled cash boxes, and closing queues
+		long sum = tibia();
+
+		Data cokolwiek = test();
+		long max = metoda(cokolwiek, sum);
+
+		Deque<Buyer> defectorBuyers = new LinkedList<>();
 		for (CashBox cashBox : cashBoxes) {
-			totalBuyers += cashBox.getQueue().size();
-
-			if (cashBox.inState(CashBox.State.ENABLED)) {
-				enabledCashBoxes++;
-			}
-
-			if (cashBox.inState(CashBox.State.IS_CLOSING)) {
-				closingQueues++;
-			}
-		}
-
-		// Step 2: Determine the maximum and minimum number of buyers per enabled cash box
-		int maxBuyersPerCashBox = totalBuyers / enabledCashBoxes;
-		int minBuyersPerCashBox = maxBuyersPerCashBox;
-
-		int remainingBuyers = totalBuyers % enabledCashBoxes;
-		if (remainingBuyers > 0) {
-			maxBuyersPerCashBox++;
-		}
-
-		// Step 3: Perform the balancing of queues
-		Queue<Buyer> defectorBuyers = new LinkedList<>();
-
-		for (CashBox cashBox : cashBoxes) {
-			int queueSize = cashBox.getQueue().size();
-
-			if (queueSize > maxBuyersPerCashBox) {
-				int excessBuyers = queueSize - maxBuyersPerCashBox;
-				for (int i = 0; i < excessBuyers; i++) {
+			long size = cashBox.getQueue().size() - max;
+			if (size > 0) {
+				for (int i = 0; i < size; i++) {
 					Buyer buyer = cashBox.removeLast();
 					defectorBuyers.add(buyer);
 				}
@@ -147,11 +125,52 @@ public class Shop {
 
 		for (CashBox cashBox : cashBoxes) {
 			if (cashBox.inState(CashBox.State.ENABLED)) {
-				while (cashBox.getQueue().size() < minBuyersPerCashBox && !defectorBuyers.isEmpty()) {
-					cashBox.addLast(defectorBuyers.remove());
+				while (cashBox.getQueue().size() < max && !defectorBuyers.isEmpty()) {
+					cashBox.addLast(defectorBuyers.removeFirst());
 				}
 			}
 		}
 	}
 
+	private  long tibia() {
+
+		long sum = 0;
+		for(int i = 0; i < cashBoxes.size() - 1; i++){
+			sum += cashBoxes.get(i).getQueue().size();
+		}
+		return sum;
+	}
+private Data test() {
+		long enabled = 0;
+		long closed = 0;
+		long isclosing = 0;
+long closingQueues = 0;
+		for(int i = 0 ; i < cashBoxes.size() - 1; i++){
+
+			if(cashBoxes.get(i).inState(CashBox.State.ENABLED)){
+				enabled++;
+			}
+			if(cashBoxes.get(i).inState(CashBox.State.IS_CLOSING)){
+				isclosing++;
+				closingQueues += cashBoxes.get(i).getQueue().size();
+			}
+			if(cashBoxes.get(i).inState(CashBox.State.DISABLED)){
+				closed++;
+			}
+		}
+		return new Data(enabled, closed, isclosing, closingQueues);
+}
+
+record Data(long enabled, long closed, long isclosing, long closingQueues){
+
+}
+
+long metoda(Data cokolwiek, long maximus) {
+		if(cokolwiek.enabled != 0  ) {
+			return maximus /  cokolwiek.enabled - cokolwiek.isclosing;
+		}
+		else{
+			return maximus +1;
+		}
+}
 }
